@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ollama Advanced UI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.0.0/marked.min.js"></script>
     <style>
@@ -15,160 +15,366 @@
         }
 
         :root {
-            --bg-primary: #0f0f0f;
-            --bg-secondary: #1a1a1a;
-            --bg-tertiary: #252525;
-            --text-primary: #e8e8e8;
-            --text-secondary: #a0a0a0;
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #13131a;
+            --bg-tertiary: #1c1c26;
+            --bg-elevated: #252533;
+            --text-primary: #f0f0f5;
+            --text-secondary: #9999aa;
+            --text-tertiary: #6666ff;
             --accent: #6366f1;
-            --accent-hover: #4f46e5;
-            --border: #333;
-            --success: #22c55e;
+            --accent-hover: #5558e3;
+            --accent-dim: rgba(99, 102, 241, 0.1);
+            --success: #10b981;
             --error: #ef4444;
             --warning: #f59e0b;
-            --sidebar-width: 280px;
-            --header-height: 60px;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.16);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --sidebar-width: 320px;
+            --header-height: 64px;
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         [data-theme="light"] {
             --bg-primary: #ffffff;
-            --bg-secondary: #f5f5f5;
-            --bg-tertiary: #e5e5e5;
-            --text-primary: #0f0f0f;
-            --text-secondary: #666666;
-            --border: #e0e0e0;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f1f3f5;
+            --bg-elevated: #ffffff;
+            --text-primary: #1a1a1f;
+            --text-secondary: #666677;
+            --text-tertiary: #5558e3;
+            --border: rgba(0, 0, 0, 0.08);
+            --border-hover: rgba(0, 0, 0, 0.16);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             overflow: hidden;
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: var(--transition);
+            line-height: 1.6;
         }
 
         .app-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
             height: 100vh;
             width: 100vw;
+            transition: var(--transition);
         }
 
-        /* Sidebar */
+        .app-container.sidebar-collapsed {
+            grid-template-columns: 0 1fr;
+        }
+
+        /* Sidebar with advanced styling */
         .sidebar {
-            width: var(--sidebar-width);
             background: var(--bg-secondary);
             border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease;
+            display: grid;
+            grid-template-rows: auto auto 1fr;
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
         }
 
-        .sidebar.collapsed {
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .sidebar-collapsed .sidebar {
             transform: translateX(-100%);
         }
 
         .sidebar-header {
             padding: 20px;
-            border-bottom: 1px solid var(--border);
             display: flex;
             flex-direction: column;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
             gap: 12px;
+            padding: 12px;
+            background: var(--bg-elevated);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: -2px;
         }
 
         .new-chat-btn {
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 14px 20px;
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
-            transition: all 0.2s ease;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .new-chat-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .new-chat-btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .new-chat-btn:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .new-chat-btn:active {
+            transform: translateY(0);
+        }
+
+        .search-section {
+            position: relative;
+            z-index: 1;
+            padding: 0 20px 16px;
+            border-bottom: 1px solid var(--border);
         }
 
         .search-box {
             position: relative;
         }
 
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
         .search-box input {
             width: 100%;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 10px 12px;
+            border-radius: 10px;
+            padding: 12px 16px 12px 44px;
             color: var(--text-primary);
-            font-size: 13px;
+            font-size: 14px;
+            transition: var(--transition);
         }
 
         .search-box input:focus {
             outline: none;
             border-color: var(--accent);
+            background: var(--bg-elevated);
+            box-shadow: 0 0 0 3px var(--accent-dim);
         }
 
         .conversations-list {
-            flex: 1;
             overflow-y: auto;
-            padding: 12px;
+            padding: 12px 16px;
+            position: relative;
+            z-index: 1;
         }
 
         .conversation-item {
-            padding: 12px;
-            margin-bottom: 4px;
-            border-radius: 6px;
+            padding: 14px 16px;
+            margin-bottom: 6px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: var(--transition);
             border: 1px solid transparent;
+            background: var(--bg-tertiary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .conversation-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent);
+            transform: scaleY(0);
+            transition: var(--transition);
         }
 
         .conversation-item:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
+            transform: translateX(4px);
         }
 
         .conversation-item.active {
-            background: var(--bg-tertiary);
+            background: var(--bg-elevated);
             border-color: var(--accent);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .conversation-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 6px;
         }
 
         .conversation-title {
             font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 4px;
+            font-weight: 600;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            flex: 1;
+            margin-right: 8px;
+        }
+
+        .conversation-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .conversation-item:hover .conversation-actions {
+            opacity: 1;
+        }
+
+        .conversation-action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .conversation-action-btn:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
         }
 
         .conversation-meta {
             font-size: 12px;
             color: var(--text-secondary);
             display: flex;
-            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
         }
 
-        /* Main Content */
+        .conversation-model {
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Main Content Area */
         .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-rows: var(--header-height) 1fr auto;
             position: relative;
+            background: var(--bg-primary);
         }
 
-        /* Header */
+        /* Advanced Header */
         .header {
-            height: var(--header-height);
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 24px;
-            gap: 16px;
+            gap: 20px;
+            backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .header:hover::before {
+            opacity: 1;
         }
 
         .header-left {
@@ -178,117 +384,246 @@
         }
 
         .toggle-sidebar-btn {
-            background: none;
-            border: none;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
             color: var(--text-primary);
             cursor: pointer;
             font-size: 20px;
-            padding: 8px;
-            border-radius: 6px;
-            transition: background 0.2s ease;
+            padding: 10px 12px;
+            border-radius: 8px;
+            transition: var(--transition);
         }
 
         .toggle-sidebar-btn:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
+            transform: scale(1.05);
+        }
+
+        .model-selector-wrapper {
+            position: relative;
         }
 
         .model-selector {
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 8px 16px;
+            border-radius: 10px;
+            padding: 10px 40px 10px 16px;
             color: var(--text-primary);
             font-size: 14px;
             cursor: pointer;
-            min-width: 180px;
+            min-width: 200px;
+            font-weight: 600;
+            appearance: none;
+            transition: var(--transition);
+        }
+
+        .model-selector:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
         }
 
         .model-selector:focus {
             outline: none;
             border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .model-selector-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .header-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid var(--border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-dot.error {
+            background: var(--error);
         }
 
         .header-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
         .icon-btn {
-            background: none;
-            border: none;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
             color: var(--text-primary);
             cursor: pointer;
             font-size: 18px;
-            padding: 8px;
-            border-radius: 6px;
-            transition: all 0.2s ease;
+            padding: 10px;
+            border-radius: 8px;
+            transition: var(--transition);
+            position: relative;
         }
 
         .icon-btn:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
         }
 
-        /* Chat Area */
+        .icon-btn:active {
+            transform: translateY(0);
+        }
+
+        .icon-btn .tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+        }
+
+        .icon-btn:hover .tooltip {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* Chat Area with CSS Grid */
         .chat-area {
-            flex: 1;
             overflow-y: auto;
             padding: 24px;
             display: flex;
             flex-direction: column;
             gap: 24px;
+            scroll-behavior: smooth;
         }
 
         .message {
-            display: flex;
+            display: grid;
+            grid-template-columns: auto 1fr;
             gap: 16px;
-            animation: slideIn 0.3s ease;
+            animation: messageSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        @keyframes slideIn {
+        @keyframes messageSlideIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px) scale(0.95);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
 
         .message-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--accent);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
+            font-weight: 700;
+            font-size: 16px;
             color: white;
             flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+            position: relative;
         }
 
         .message.assistant .message-avatar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
+        .message-avatar::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 14px;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .message:hover .message-avatar::after {
+            opacity: 0.5;
+        }
+
         .message-content {
-            flex: 1;
             max-width: 800px;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 16px 20px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .message:hover .message-content {
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
         }
 
         .message-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .message-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .message-role {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 14px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .message-time {
@@ -298,22 +633,24 @@
 
         .message-text {
             font-size: 15px;
-            line-height: 1.6;
+            line-height: 1.7;
         }
 
         .message-text pre {
-            background: var(--bg-tertiary);
+            background: var(--bg-primary);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 16px;
             overflow-x: auto;
-            margin: 12px 0;
+            margin: 16px 0;
             position: relative;
+            box-shadow: var(--shadow-sm);
         }
 
         .message-text code {
-            font-family: 'Courier New', monospace;
+            font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
             font-size: 13px;
+            line-height: 1.6;
         }
 
         .message-text p {
@@ -325,30 +662,46 @@
             padding-left: 24px;
         }
 
+        .message-text li {
+            margin: 8px 0;
+        }
+
+        .message-text blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+            margin: 16px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
         .copy-code-btn {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            background: var(--bg-secondary);
+            top: 12px;
+            right: 12px;
+            background: var(--bg-elevated);
             border: 1px solid var(--border);
             color: var(--text-primary);
             padding: 6px 12px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: var(--transition);
+            font-weight: 600;
         }
 
         .copy-code-btn:hover {
-            background: var(--bg-tertiary);
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            transform: scale(1.05);
         }
 
         .message-actions {
             display: flex;
             gap: 8px;
-            margin-top: 8px;
+            margin-top: 12px;
             opacity: 0;
-            transition: opacity 0.2s ease;
+            transition: var(--transition);
         }
 
         .message:hover .message-actions {
@@ -356,26 +709,46 @@
         }
 
         .action-btn {
-            background: none;
+            background: var(--bg-elevated);
             border: 1px solid var(--border);
             color: var(--text-secondary);
-            padding: 4px 12px;
-            border-radius: 4px;
+            padding: 6px 14px;
+            border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: var(--transition);
+            font-weight: 600;
         }
 
         .action-btn:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            transform: translateY(-2px);
         }
 
-        /* Input Area */
+        /* Input Area with Modern Design */
         .input-area {
             padding: 24px;
             background: var(--bg-secondary);
             border-top: 1px solid var(--border);
+            position: relative;
+        }
+
+        .input-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .input-area:focus-within::before {
+            opacity: 1;
         }
 
         .input-container {
@@ -389,13 +762,34 @@
             gap: 12px;
             background: var(--bg-primary);
             border: 2px solid var(--border);
-            border-radius: 12px;
+            border-radius: var(--border-radius);
             padding: 12px;
-            transition: border-color 0.2s ease;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .input-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: var(--border-radius);
+            padding: 2px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .input-wrapper:focus-within::before {
+            opacity: 1;
         }
 
         .input-wrapper:focus-within {
-            border-color: var(--accent);
+            border-color: transparent;
+            box-shadow: 0 0 0 3px var(--accent-dim);
         }
 
         .message-input {
@@ -408,44 +802,58 @@
             outline: none;
             max-height: 200px;
             min-height: 24px;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+
+        .message-input::placeholder {
+            color: var(--text-secondary);
         }
 
         .send-btn {
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
             border: none;
             color: white;
-            padding: 10px 20px;
+            padding: 10px 24px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s ease;
+            font-weight: 700;
+            transition: var(--transition);
             align-self: flex-end;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
         .send-btn:hover:not(:disabled) {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .send-btn:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         .send-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
 
-        /* Settings Panel */
+        /* Settings Panel with Glass Effect */
         .settings-panel {
             position: fixed;
             top: 0;
-            right: -400px;
-            width: 400px;
+            right: -450px;
+            width: 450px;
             height: 100vh;
             background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
             border-left: 1px solid var(--border);
             padding: 24px;
             overflow-y: auto;
-            transition: right 0.3s ease;
+            transition: var(--transition);
             z-index: 1000;
+            box-shadow: var(--shadow-lg);
         }
 
         .settings-panel.open {
@@ -456,44 +864,57 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
         }
 
         .settings-title {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .setting-group {
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
 
         .setting-label {
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 10px;
             display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
         }
 
         .setting-input {
             width: 100%;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 10px 12px;
+            border-radius: 10px;
+            padding: 12px 16px;
             color: var(--text-primary);
             font-size: 14px;
+            transition: var(--transition);
+            font-family: inherit;
         }
 
         .setting-input:focus {
             outline: none;
             border-color: var(--accent);
+            background: var(--bg-elevated);
+            box-shadow: 0 0 0 3px var(--accent-dim);
         }
 
         .slider-container {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
         .slider {
@@ -503,72 +924,171 @@
             background: var(--bg-tertiary);
             outline: none;
             -webkit-appearance: none;
+            position: relative;
         }
 
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
             cursor: pointer;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+            transition: var(--transition);
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.6);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
         }
 
         .slider-value {
             font-size: 14px;
-            color: var(--text-secondary);
-            min-width: 40px;
+            color: var(--text-primary);
+            font-weight: 700;
+            min-width: 50px;
             text-align: right;
+            background: var(--bg-elevated);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
         }
 
-        /* Model Management */
-        .model-list {
+        /* API Inspector Panel */
+        .api-inspector {
+            position: fixed;
+            bottom: -70vh;
+            left: 0;
+            right: 0;
+            height: 70vh;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            transition: var(--transition);
+            z-index: 999;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            box-shadow: var(--shadow-lg);
         }
 
-        .model-item {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 12px;
+        .api-inspector.open {
+            bottom: 0;
+        }
+
+        .api-inspector-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-tertiary);
         }
 
-        .model-info {
+        .api-inspector-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .api-inspector-badge {
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .api-inspector-content {
             flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        .model-name {
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 4px;
+        .api-query-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            animation: apiQuerySlideIn 0.3s ease;
         }
 
-        .model-size {
+        @keyframes apiQuerySlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .api-query-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .api-query-method {
+            font-weight: 700;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--success);
+            color: white;
+        }
+
+        .api-query-method.error {
+            background: var(--error);
+        }
+
+        .api-query-time {
             font-size: 12px;
             color: var(--text-secondary);
         }
 
-        .delete-model-btn {
-            background: var(--error);
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
+        .api-query-url {
+            font-size: 13px;
+            color: var(--accent);
+            margin-bottom: 12px;
+            word-break: break-all;
+        }
+
+        .api-query-details {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Fira Code', monospace;
             font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            max-height: 200px;
+            overflow: auto;
+            border: 1px solid var(--border);
         }
 
-        .delete-model-btn:hover {
-            opacity: 0.8;
+        .api-query-details pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
-        /* Toast Notifications */
+        /* Toast Notifications with Animation */
         .toast-container {
             position: fixed;
             bottom: 24px;
@@ -580,24 +1100,26 @@
         }
 
         .toast {
-            background: var(--bg-secondary);
+            background: var(--bg-elevated);
             border: 1px solid var(--border);
             border-left: 4px solid var(--accent);
-            border-radius: 8px;
-            padding: 16px;
-            min-width: 300px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            animation: toastIn 0.3s ease;
+            border-radius: 10px;
+            padding: 16px 20px;
+            min-width: 320px;
+            max-width: 400px;
+            box-shadow: var(--shadow-lg);
+            animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(20px);
         }
 
-        @keyframes toastIn {
+        @keyframes toastSlideIn {
             from {
                 opacity: 0;
-                transform: translateX(100px);
+                transform: translateX(100%) scale(0.8);
             }
             to {
                 opacity: 1;
-                transform: translateX(0);
+                transform: translateX(0) scale(1);
             }
         }
 
@@ -613,6 +1135,23 @@
             border-left-color: var(--warning);
         }
 
+        .toast-content {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
         /* Loading Indicator */
         .typing-indicator {
             display: flex;
@@ -621,11 +1160,15 @@
         }
 
         .typing-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: var(--text-secondary);
-            animation: typingAnimation 1.4s infinite;
+            background: var(--accent);
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
         }
 
         .typing-dot:nth-child(2) {
@@ -636,29 +1179,33 @@
             animation-delay: 0.4s;
         }
 
-        @keyframes typingAnimation {
+        @keyframes typingBounce {
             0%, 60%, 100% {
                 opacity: 0.3;
-                transform: translateY(0);
+                transform: translateY(0) scale(0.8);
             }
             30% {
                 opacity: 1;
-                transform: translateY(-8px);
+                transform: translateY(-12px) scale(1);
             }
         }
 
-        /* Modal */
+        /* Modal with Backdrop Blur */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            inset: 0;
             background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 3000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-overlay.open {
@@ -666,62 +1213,82 @@
         }
 
         .modal {
-            background: var(--bg-secondary);
+            background: var(--bg-elevated);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 500px;
+            border-radius: var(--border-radius);
+            padding: 32px;
+            max-width: 600px;
             width: 90%;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalZoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalZoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .modal-header {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 16px;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .modal-actions {
             display: flex;
             gap: 12px;
             justify-content: flex-end;
-            margin-top: 24px;
+            margin-top: 28px;
         }
 
         .modal-btn {
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 12px 24px;
+            border-radius: 8px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: var(--transition);
         }
 
         .modal-btn.primary {
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
             border: none;
             color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
         .modal-btn.primary:hover {
-            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
         }
 
         .modal-btn.secondary {
-            background: none;
+            background: var(--bg-tertiary);
             border: 1px solid var(--border);
             color: var(--text-primary);
         }
 
         .modal-btn.secondary:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
         }
 
-        /* Scrollbar */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
         }
 
         ::-webkit-scrollbar-track {
@@ -730,11 +1297,12 @@
 
         ::-webkit-scrollbar-thumb {
             background: var(--bg-tertiary);
-            border-radius: 4px;
+            border-radius: 5px;
+            border: 2px solid var(--bg-secondary);
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--border);
+            background: var(--accent);
         }
 
         /* Empty State */
@@ -745,44 +1313,188 @@
             justify-content: center;
             height: 100%;
             text-align: center;
-            padding: 48px;
+            padding: 64px;
+            animation: fadeIn 0.6s ease;
         }
 
         .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.5;
+            font-size: 80px;
+            margin-bottom: 24px;
+            opacity: 0.6;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .empty-state-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .empty-state-text {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--text-secondary);
-            max-width: 400px;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            :root {
+                --sidebar-width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 999;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .settings-panel {
+                width: 100vw;
+                right: -100vw;
+            }
+
+            .api-inspector {
+                height: 60vh;
+                bottom: -60vh;
+            }
+
+            .header-center {
+                display: none;
+            }
+        }
+
+        /* Model List Styles */
+        .model-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .model-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .model-item:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-hover);
+        }
+
+        .model-info {
+            flex: 1;
+        }
+
+        .model-name {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .model-size {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .delete-model-btn {
+            background: var(--error);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .delete-model-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 4000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--bg-tertiary);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
+    <div class="app-container" id="appContainer">
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <button class="new-chat-btn" onclick="app.createNewConversation()">
-                    + New Conversation
+                <div class="brand">
+                    <div class="brand-icon">🤖</div>
+                    <div class="brand-text">
+                        <div class="brand-title">Ollama UI</div>
+                        <div class="brand-subtitle">Advanced Interface</div>
+                    </div>
+                </div>
+                <button class="new-chat-btn" onclick="OllamaApp.createNewConversation()">
+                    <span>+ New Conversation</span>
                 </button>
+            </div>
+            <div class="search-section">
                 <div class="search-box">
+                    <span class="search-icon">🔍</span>
                     <input type="text" placeholder="Search conversations..." id="searchInput" 
-                           oninput="app.searchConversations(this.value)">
+                           oninput="OllamaApp.searchConversations(this.value)">
                 </div>
             </div>
-            <div class="conversations-list" id="conversationsList">
-                <!-- Conversations will be populated here -->
-            </div>
+            <div class="conversations-list" id="conversationsList"></div>
         </div>
 
         <!-- Main Content -->
@@ -790,17 +1502,47 @@
             <!-- Header -->
             <div class="header">
                 <div class="header-left">
-                    <button class="toggle-sidebar-btn" onclick="app.toggleSidebar()">☰</button>
-                    <select class="model-selector" id="modelSelector" onchange="app.changeModel(this.value)">
-                        <option value="">Loading models...</option>
-                    </select>
+                    <button class="toggle-sidebar-btn" onclick="OllamaApp.toggleSidebar()">
+                        <span>☰</span>
+                    </button>
+                    <div class="model-selector-wrapper">
+                        <select class="model-selector" id="modelSelector" onchange="OllamaApp.changeModel(this.value)">
+                            <option value="">Loading models...</option>
+                        </select>
+                        <span class="model-selector-icon">▼</span>
+                    </div>
+                </div>
+                <div class="header-center">
+                    <div class="connection-status">
+                        <div class="status-dot" id="statusDot"></div>
+                        <span id="statusText">Connected</span>
+                    </div>
                 </div>
                 <div class="header-right">
-                    <button class="icon-btn" title="Settings" onclick="app.toggleSettings()">⚙</button>
-                    <button class="icon-btn" title="Toggle Theme" onclick="app.toggleTheme()">◐</button>
-                    <button class="icon-btn" title="Export Conversation" onclick="app.exportConversation()">↓</button>
-                    <button class="icon-btn" title="Import Conversation" onclick="app.importConversation()">↑</button>
-                    <button class="icon-btn" title="Model Management" onclick="app.openModelManagement()">📦</button>
+                    <button class="icon-btn" onclick="OllamaApp.toggleApiInspector()">
+                        <span>🔍</span>
+                        <span class="tooltip">API Inspector</span>
+                    </button>
+                    <button class="icon-btn" onclick="OllamaApp.toggleSettings()">
+                        <span>⚙</span>
+                        <span class="tooltip">Settings</span>
+                    </button>
+                    <button class="icon-btn" onclick="OllamaApp.toggleTheme()">
+                        <span id="themeIcon">◐</span>
+                        <span class="tooltip">Toggle Theme</span>
+                    </button>
+                    <button class="icon-btn" onclick="OllamaApp.exportConversation()">
+                        <span>↓</span>
+                        <span class="tooltip">Export</span>
+                    </button>
+                    <button class="icon-btn" onclick="OllamaApp.importConversation()">
+                        <span>↑</span>
+                        <span class="tooltip">Import</span>
+                    </button>
+                    <button class="icon-btn" onclick="OllamaApp.openModelManagement()">
+                        <span>📦</span>
+                        <span class="tooltip">Models</span>
+                    </button>
                 </div>
             </div>
 
@@ -825,9 +1567,11 @@
                             id="messageInput" 
                             placeholder="Type your message..." 
                             rows="1"
-                            onkeydown="app.handleKeyPress(event)"
-                            oninput="app.autoResize(this)"></textarea>
-                        <button class="send-btn" id="sendBtn" onclick="app.sendMessage()">Send</button>
+                            onkeydown="OllamaApp.handleKeyPress(event)"
+                            oninput="OllamaApp.autoResize(this)"></textarea>
+                        <button class="send-btn" id="sendBtn" onclick="OllamaApp.sendMessage()">
+                            <span>Send</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -838,7 +1582,7 @@
     <div class="settings-panel" id="settingsPanel">
         <div class="settings-header">
             <div class="settings-title">Settings</div>
-            <button class="icon-btn" onclick="app.toggleSettings()">✕</button>
+            <button class="icon-btn" onclick="OllamaApp.toggleSettings()">✕</button>
         </div>
 
         <div class="setting-group">
@@ -846,7 +1590,7 @@
             <textarea 
                 class="setting-input" 
                 id="systemPrompt" 
-                rows="4" 
+                rows="5" 
                 placeholder="You are a helpful assistant..."></textarea>
         </div>
 
@@ -854,7 +1598,7 @@
             <label class="setting-label">Temperature</label>
             <div class="slider-container">
                 <input type="range" class="slider" id="temperature" min="0" max="2" step="0.1" value="0.8"
-                       oninput="app.updateSliderValue('temperature', this.value)">
+                       oninput="OllamaApp.updateSliderValue('temperature', this.value)">
                 <span class="slider-value" id="temperatureValue">0.8</span>
             </div>
         </div>
@@ -863,7 +1607,7 @@
             <label class="setting-label">Top P</label>
             <div class="slider-container">
                 <input type="range" class="slider" id="topP" min="0" max="1" step="0.05" value="0.9"
-                       oninput="app.updateSliderValue('topP', this.value)">
+                       oninput="OllamaApp.updateSliderValue('topP', this.value)">
                 <span class="slider-value" id="topPValue">0.9</span>
             </div>
         </div>
@@ -872,7 +1616,7 @@
             <label class="setting-label">Top K</label>
             <div class="slider-container">
                 <input type="range" class="slider" id="topK" min="1" max="100" step="1" value="40"
-                       oninput="app.updateSliderValue('topK', this.value)">
+                       oninput="OllamaApp.updateSliderValue('topK', this.value)">
                 <span class="slider-value" id="topKValue">40</span>
             </div>
         </div>
@@ -888,7 +1632,30 @@
         </div>
 
         <div class="setting-group">
-            <button class="new-chat-btn" onclick="app.saveSettings()">Save Settings</button>
+            <button class="new-chat-btn" onclick="OllamaApp.saveSettings()">Save Settings</button>
+        </div>
+    </div>
+
+    <!-- API Inspector Panel -->
+    <div class="api-inspector" id="apiInspector">
+        <div class="api-inspector-header">
+            <div class="api-inspector-title">
+                <span>API Inspector</span>
+                <span class="api-inspector-badge" id="apiQueryCount">0 queries</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="icon-btn" onclick="OllamaApp.clearApiQueries()">
+                    <span>🗑</span>
+                </button>
+                <button class="icon-btn" onclick="OllamaApp.toggleApiInspector()">
+                    <span>✕</span>
+                </button>
+            </div>
+        </div>
+        <div class="api-inspector-content" id="apiInspectorContent">
+            <div class="empty-state" style="padding: 32px;">
+                <div class="empty-state-text">No API queries yet. Start a conversation to see API calls.</div>
+            </div>
         </div>
     </div>
 
@@ -896,633 +1663,869 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Modal -->
-    <div class="modal-overlay" id="modalOverlay" onclick="app.closeModal(event)">
+    <div class="modal-overlay" id="modalOverlay" onclick="OllamaApp.closeModal(event)">
         <div class="modal" onclick="event.stopPropagation()">
             <div class="modal-header" id="modalHeader">Modal Title</div>
             <div id="modalContent"></div>
             <div class="modal-actions">
-                <button class="modal-btn secondary" onclick="app.closeModal()">Cancel</button>
+                <button class="modal-btn secondary" onclick="OllamaApp.closeModal()">Cancel</button>
                 <button class="modal-btn primary" id="modalActionBtn">Confirm</button>
             </div>
         </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
     <script>
-        const app = {
-            currentConversationId: null,
-            conversations: {},
-            currentModel: null,
-            models: [],
-            userIP: null,
-            isGenerating: false,
-            settings: {
-                systemPrompt: '',
-                temperature: 0.8,
-                topP: 0.9,
-                topK: 40,
-                maxTokens: 2048,
-                ollamaUrl: 'http://localhost:11434'
-            },
-
-            async init() {
-                // Get user IP
-                await this.getUserIP();
-                
-                // Load settings
-                this.loadSettings();
-                
-                // Load conversations
-                this.loadConversations();
-                
-                // Load models
-                await this.loadModels();
-                
-                // Setup theme
-                this.setupTheme();
-                
-                // Setup markdown renderer
-                this.setupMarkdown();
-
-                // Show welcome message
-                this.showToast('Connected to Ollama', 'success');
-            },
-
-            async getUserIP() {
-                try {
-                    const response = await fetch('https://api.ipify.org?format=json');
-                    const data = await response.json();
-                    this.userIP = data.ip;
-                } catch (error) {
-                    // Fallback to a default if IP fetch fails
-                    this.userIP = 'local';
+        // Modern ES6+ Ollama App with Advanced Features
+        const OllamaApp = (() => {
+            // Private state
+            let state = {
+                currentConversationId: null,
+                conversations: {},
+                currentModel: null,
+                models: [],
+                userIP: null,
+                isGenerating: false,
+                apiQueries: [],
+                settings: {
+                    systemPrompt: '',
+                    temperature: 0.8,
+                    topP: 0.9,
+                    topK: 40,
+                    maxTokens: 2048,
+                    ollamaUrl: 'http://localhost:11434'
                 }
-            },
+            };
 
-            loadSettings() {
-                const saved = localStorage.getItem(`ollama_settings_${this.userIP}`);
-                if (saved) {
-                    this.settings = { ...this.settings, ...JSON.parse(saved) };
-                }
-                
-                // Update UI
-                document.getElementById('systemPrompt').value = this.settings.systemPrompt;
-                document.getElementById('temperature').value = this.settings.temperature;
-                document.getElementById('temperatureValue').textContent = this.settings.temperature;
-                document.getElementById('topP').value = this.settings.topP;
-                document.getElementById('topPValue').textContent = this.settings.topP;
-                document.getElementById('topK').value = this.settings.topK;
-                document.getElementById('topKValue').textContent = this.settings.topK;
-                document.getElementById('maxTokens').value = this.settings.maxTokens;
-                document.getElementById('ollamaUrl').value = this.settings.ollamaUrl;
-            },
+            // Utility functions
+            const utils = {
+                formatBytes: (bytes) => {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+                },
 
-            saveSettings() {
-                this.settings.systemPrompt = document.getElementById('systemPrompt').value;
-                this.settings.temperature = parseFloat(document.getElementById('temperature').value);
-                this.settings.topP = parseFloat(document.getElementById('topP').value);
-                this.settings.topK = parseInt(document.getElementById('topK').value);
-                this.settings.maxTokens = parseInt(document.getElementById('maxTokens').value);
-                this.settings.ollamaUrl = document.getElementById('ollamaUrl').value;
+                formatTime: (date) => {
+                    return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                },
 
-                localStorage.setItem(`ollama_settings_${this.userIP}`, JSON.stringify(this.settings));
-                this.showToast('Settings saved', 'success');
-            },
-
-            loadConversations() {
-                const saved = localStorage.getItem(`ollama_conversations_${this.userIP}`);
-                if (saved) {
-                    this.conversations = JSON.parse(saved);
-                    this.renderConversationsList();
-                }
-            },
-
-            saveConversations() {
-                localStorage.setItem(`ollama_conversations_${this.userIP}`, JSON.stringify(this.conversations));
-            },
-
-            async loadModels() {
-                try {
-                    const response = await fetch(`${this.settings.ollamaUrl}/api/tags`);
-                    const data = await response.json();
-                    this.models = data.models || [];
+                formatDate: (date) => {
+                    const d = new Date(date);
+                    const now = new Date();
+                    const diff = now - d;
                     
-                    const selector = document.getElementById('modelSelector');
-                    selector.innerHTML = this.models.map(model => 
-                        `<option value="${model.name}">${model.name}</option>`
-                    ).join('');
+                    if (diff < 86400000) return 'Today';
+                    if (diff < 172800000) return 'Yesterday';
+                    return d.toLocaleDateString();
+                },
+
+                debounce: (func, wait) => {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                }
+            };
+
+            // Storage operations
+            const storage = {
+                save: (key, data) => {
+                    try {
+                        localStorage.setItem(`ollama_${key}_${state.userIP}`, JSON.stringify(data));
+                        console.log(`Saved ${key} to localStorage:`, data);
+                        return true;
+                    } catch (error) {
+                        console.error(`Failed to save ${key}:`, error);
+                        ui.showToast('Failed to save data', 'error');
+                        return false;
+                    }
+                },
+
+                load: (key) => {
+                    try {
+                        const data = localStorage.getItem(`ollama_${key}_${state.userIP}`);
+                        console.log(`Loaded ${key} from localStorage:`, data);
+                        return data ? JSON.parse(data) : null;
+                    } catch (error) {
+                        console.error(`Failed to load ${key}:`, error);
+                        return null;
+                    }
+                }
+            };
+
+            // API operations with logging
+            const api = {
+                log: (method, url, payload, response, error = null) => {
+                    const query = {
+                        id: Date.now(),
+                        method,
+                        url,
+                        payload,
+                        response: error || response,
+                        timestamp: new Date().toISOString(),
+                        success: !error
+                    };
                     
-                    if (this.models.length > 0) {
-                        this.currentModel = this.models[0].name;
-                        selector.value = this.currentModel;
+                    state.apiQueries.unshift(query);
+                    if (state.apiQueries.length > 50) state.apiQueries.pop();
+                    
+                    ui.updateApiInspector();
+                },
+
+                async fetch: async (endpoint, options = {}) => {
+                    const url = `${state.settings.ollamaUrl}${endpoint}`;
+                    const method = options.method || 'GET';
+                    
+                    try {
+                        const response = await fetch(url, {
+                            ...options,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...options.headers
+                            }
+                        });
+
+                        const data = await response.json();
+                        api.log(method, url, options.body, data);
+                        
+                        if (!response.ok) throw new Error(data.error || 'API request failed');
+                        
+                        return data;
+                    } catch (error) {
+                        api.log(method, url, options.body, null, error.message);
+                        throw error;
                     }
-                } catch (error) {
-                    this.showToast('Failed to load models. Is Ollama running?', 'error');
-                }
-            },
+                },
 
-            createNewConversation() {
-                const id = Date.now().toString();
-                this.conversations[id] = {
-                    id,
-                    title: 'New Conversation',
-                    messages: [],
-                    model: this.currentModel,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-                
-                this.currentConversationId = id;
-                this.saveConversations();
-                this.renderConversationsList();
-                this.renderChat();
-            },
+                async streamFetch: async (endpoint, options, onChunk) => {
+                    const url = `${state.settings.ollamaUrl}${endpoint}`;
+                    const method = options.method || 'POST';
+                    
+                    try {
+                        const response = await fetch(url, {
+                            ...options,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...options.headers
+                            }
+                        });
 
-            selectConversation(id) {
-                this.currentConversationId = id;
-                this.renderConversationsList();
-                this.renderChat();
-            },
+                        if (!response.ok) {
+                            const error = await response.text();
+                            api.log(method, url, options.body, null, error);
+                            throw new Error(error || 'API request failed');
+                        }
 
-            deleteConversation(id) {
-                if (confirm('Delete this conversation?')) {
-                    delete this.conversations[id];
-                    if (this.currentConversationId === id) {
-                        this.currentConversationId = null;
-                        this.renderChat();
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        let fullResponse = '';
+
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+
+                            const chunk = decoder.decode(value);
+                            fullResponse += chunk;
+                            const lines = chunk.split('\n').filter(line => line.trim());
+
+                            for (const line of lines) {
+                                try {
+                                    const json = JSON.parse(line);
+                                    await onChunk(json);
+                                } catch (e) {
+                                    console.warn('Failed to parse chunk:', e);
+                                }
+                            }
+                        }
+
+                        api.log(method, url, options.body, fullResponse);
+                    } catch (error) {
+                        api.log(method, url, options.body, null, error.message);
+                        throw error;
                     }
-                    this.saveConversations();
-                    this.renderConversationsList();
-                    this.showToast('Conversation deleted', 'success');
                 }
-            },
+            };
 
-            renderConversationsList() {
-                const container = document.getElementById('conversationsList');
-                const sorted = Object.values(this.conversations).sort((a, b) => 
-                    new Date(b.updatedAt) - new Date(a.updatedAt)
-                );
-
-                container.innerHTML = sorted.map(conv => `
-                    <div class="conversation-item ${conv.id === this.currentConversationId ? 'active' : ''}" 
-                         onclick="app.selectConversation('${conv.id}')">
-                        <div class="conversation-title">${conv.title}</div>
-                        <div class="conversation-meta">
-                            <span>${new Date(conv.updatedAt).toLocaleDateString()}</span>
-                            <span onclick="event.stopPropagation(); app.deleteConversation('${conv.id}')" 
-                                  style="cursor: pointer;">🗑</span>
+            // UI operations
+            const ui = {
+                showToast: (message, type = 'info') => {
+                    const container = document.getElementById('toastContainer');
+                    const toast = document.createElement('div');
+                    toast.className = `toast ${type}`;
+                    
+                    const icons = {
+                        success: '✓',
+                        error: '✕',
+                        warning: '⚠',
+                        info: 'ℹ'
+                    };
+                    
+                    toast.innerHTML = `
+                        <div class="toast-content">
+                            <div class="toast-icon">${icons[type] || icons.info}</div>
+                            <div class="toast-message">${message}</div>
                         </div>
-                    </div>
-                `).join('');
-            },
+                    `;
+                    
+                    container.appendChild(toast);
 
-            renderChat() {
-                const chatArea = document.getElementById('chatArea');
-                
-                if (!this.currentConversationId) {
-                    chatArea.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💬</div>
-                            <div class="empty-state-title">Start a Conversation</div>
-                            <div class="empty-state-text">
-                                Select a model and start chatting with your local Ollama instance.
-                                Your conversations are stored locally and organized by your IP address.
+                    setTimeout(() => {
+                        toast.style.animation = 'toastSlideIn 0.3s ease reverse';
+                        setTimeout(() => toast.remove(), 300);
+                    }, 3000);
+                },
+
+                updateConnectionStatus: (connected) => {
+                    const dot = document.getElementById('statusDot');
+                    const text = document.getElementById('statusText');
+                    
+                    if (connected) {
+                        dot.classList.remove('error');
+                        text.textContent = 'Connected';
+                    } else {
+                        dot.classList.add('error');
+                        text.textContent = 'Disconnected';
+                    }
+                },
+
+                updateApiInspector: () => {
+                    const content = document.getElementById('apiInspectorContent');
+                    const count = document.getElementById('apiQueryCount');
+                    
+                    count.textContent = `${state.apiQueries.length} queries`;
+                    
+                    if (state.apiQueries.length === 0) {
+                        content.innerHTML = `
+                            <div class="empty-state" style="padding: 32px;">
+                                <div class="empty-state-text">No API queries yet. Start a conversation to see API calls.</div>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    content.innerHTML = state.apiQueries.map(query => `
+                        <div class="api-query-item">
+                            <div class="api-query-header">
+                                <span class="api-query-method ${query.success ? '' : 'error'}">${query.method}</span>
+                                <span class="api-query-time">${utils.formatTime(query.timestamp)}</span>
+                            </div>
+                            <div class="api-query-url">${query.url}</div>
+                            <div class="api-query-details">
+                                <pre>${JSON.stringify(query.payload ? JSON.parse(query.payload) : {}, null, 2)}</pre>
+                            </div>
+                        </div>
+                    `).join('');
+                },
+
+                renderConversationsList: () => {
+                    const container = document.getElementById('conversationsList');
+                    const sorted = Object.values(state.conversations).sort((a, b) => 
+                        new Date(b.updatedAt) - new Date(a.updatedAt)
+                    );
+
+                    if (sorted.length === 0) {
+                        container.innerHTML = '<div class="empty-state" style="padding: 32px;"><div class="empty-state-text">No conversations yet</div></div>';
+                        return;
+                    }
+
+                    container.innerHTML = sorted.map(conv => `
+                        <div class="conversation-item ${conv.id === state.currentConversationId ? 'active' : ''}" 
+                             onclick="OllamaApp.selectConversation('${conv.id}')">
+                            <div class="conversation-header">
+                                <div class="conversation-title">${conv.title}</div>
+                                <div class="conversation-actions">
+                                    <button class="conversation-action-btn" onclick="event.stopPropagation(); OllamaApp.deleteConversation('${conv.id}')" title="Delete">
+                                        🗑
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="conversation-meta">
+                                <span>${utils.formatDate(conv.updatedAt)}</span>
+                                <span class="conversation-model">${conv.model || 'No model'}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                },
+
+                renderChat: () => {
+                    const chatArea = document.getElementById('chatArea');
+                    
+                    if (!state.currentConversationId) {
+                        chatArea.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">💬</div>
+                                <div class="empty-state-title">Start a Conversation</div>
+                                <div class="empty-state-text">
+                                    Select a model and start chatting with your local Ollama instance.
+                                    Your conversations are stored locally and organized by your IP address.
+                                </div>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const conversation = state.conversations[state.currentConversationId];
+                    if (!conversation) {
+                        ui.renderChat();
+                        return;
+                    }
+
+                    chatArea.innerHTML = conversation.messages.map(msg => ui.renderMessage(msg)).join('');
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                },
+
+                renderMessage: (message) => {
+                    const time = utils.formatTime(message.timestamp);
+                    const content = marked.parse(message.content);
+                    
+                    return `
+                        <div class="message ${message.role}">
+                            <div class="message-avatar">${message.role === 'user' ? 'U' : 'AI'}</div>
+                            <div class="message-content">
+                                <div class="message-header">
+                                    <div class="message-header-left">
+                                        <span class="message-role">${message.role === 'user' ? 'You' : 'Assistant'}</span>
+                                        <span class="message-time">${time}</span>
+                                    </div>
+                                </div>
+                                <div class="message-text">${content}</div>
+                                <div class="message-actions">
+                                    <button class="action-btn" onclick="OllamaApp.copyMessage('${message.id}')">Copy</button>
+                                    <button class="action-btn" onclick="OllamaApp.regenerateResponse('${message.id}')">Regenerate</button>
+                                </div>
                             </div>
                         </div>
                     `;
-                    return;
                 }
+            };
 
-                const conversation = this.conversations[this.currentConversationId];
-                chatArea.innerHTML = conversation.messages.map(msg => this.renderMessage(msg)).join('');
-                chatArea.scrollTop = chatArea.scrollHeight;
-            },
+            // Core app functions
+            return {
+                init: async function() {
+                    console.log('Initializing Ollama App...');
+                    
+                    // Get user IP
+                    await this.getUserIP();
+                    console.log('User IP:', state.userIP);
+                    
+                    // Load settings
+                    this.loadSettings();
+                    console.log('Settings loaded:', state.settings);
+                    
+                    // Load conversations
+                    this.loadConversations();
+                    console.log('Conversations loaded:', Object.keys(state.conversations).length);
+                    
+                    // Load models
+                    await this.loadModels();
+                    
+                    // Setup theme
+                    this.setupTheme();
+                    
+                    // Setup markdown
+                    this.setupMarkdown();
 
-            renderMessage(message) {
-                const time = new Date(message.timestamp).toLocaleTimeString();
-                const content = marked.parse(message.content);
-                
-                return `
-                    <div class="message ${message.role}">
-                        <div class="message-avatar">${message.role === 'user' ? 'U' : 'AI'}</div>
-                        <div class="message-content">
-                            <div class="message-header">
-                                <span class="message-role">${message.role === 'user' ? 'You' : 'Assistant'}</span>
-                                <span class="message-time">${time}</span>
-                            </div>
-                            <div class="message-text">${content}</div>
-                            <div class="message-actions">
-                                <button class="action-btn" onclick="app.copyMessage('${message.id}')">Copy</button>
-                                <button class="action-btn" onclick="app.regenerateResponse('${message.id}')">Regenerate</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            },
+                    // Test connection
+                    ui.updateConnectionStatus(true);
+                    ui.showToast('Connected to Ollama', 'success');
+                },
 
-            async sendMessage() {
-                if (this.isGenerating) return;
+                getUserIP: async function() {
+                    try {
+                        const response = await fetch('https://api.ipify.org?format=json');
+                        const data = await response.json();
+                        state.userIP = data.ip;
+                    } catch (error) {
+                        console.error('Failed to get IP:', error);
+                        state.userIP = 'local';
+                    }
+                },
 
-                const input = document.getElementById('messageInput');
-                const message = input.value.trim();
-                
-                if (!message) return;
-                if (!this.currentConversationId) this.createNewConversation();
-                if (!this.currentModel) {
-                    this.showToast('Please select a model', 'error');
-                    return;
-                }
+                loadSettings: function() {
+                    const saved = storage.load('settings');
+                    if (saved) {
+                        state.settings = { ...state.settings, ...saved };
+                    }
+                    
+                    // Update UI
+                    document.getElementById('systemPrompt').value = state.settings.systemPrompt;
+                    document.getElementById('temperature').value = state.settings.temperature;
+                    document.getElementById('temperatureValue').textContent = state.settings.temperature;
+                    document.getElementById('topP').value = state.settings.topP;
+                    document.getElementById('topPValue').textContent = state.settings.topP;
+                    document.getElementById('topK').value = state.settings.topK;
+                    document.getElementById('topKValue').textContent = state.settings.topK;
+                    document.getElementById('maxTokens').value = state.settings.maxTokens;
+                    document.getElementById('ollamaUrl').value = state.settings.ollamaUrl;
+                },
 
-                const conversation = this.conversations[this.currentConversationId];
-                
-                // Add user message
-                const userMessage = {
-                    id: Date.now().toString(),
-                    role: 'user',
-                    content: message,
-                    timestamp: new Date().toISOString()
-                };
-                
-                conversation.messages.push(userMessage);
-                
-                // Update title if first message
-                if (conversation.messages.length === 1) {
-                    conversation.title = message.substring(0, 50) + (message.length > 50 ? '...' : '');
-                }
-                
-                conversation.updatedAt = new Date().toISOString();
-                this.saveConversations();
-                this.renderConversationsList();
-                this.renderChat();
+                saveSettings: function() {
+                    state.settings.systemPrompt = document.getElementById('systemPrompt').value;
+                    state.settings.temperature = parseFloat(document.getElementById('temperature').value);
+                    state.settings.topP = parseFloat(document.getElementById('topP').value);
+                    state.settings.topK = parseInt(document.getElementById('topK').value);
+                    state.settings.maxTokens = parseInt(document.getElementById('maxTokens').value);
+                    state.settings.ollamaUrl = document.getElementById('ollamaUrl').value;
 
-                input.value = '';
-                this.autoResize(input);
+                    if (storage.save('settings', state.settings)) {
+                        ui.showToast('Settings saved', 'success');
+                    }
+                },
 
-                // Show typing indicator
-                const chatArea = document.getElementById('chatArea');
-                const typingDiv = document.createElement('div');
-                typingDiv.className = 'message assistant';
-                typingDiv.innerHTML = `
-                    <div class="message-avatar">AI</div>
-                    <div class="message-content">
-                        <div class="typing-indicator">
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                        </div>
-                    </div>
-                `;
-                chatArea.appendChild(typingDiv);
-                chatArea.scrollTop = chatArea.scrollHeight;
+                loadConversations: function() {
+                    const saved = storage.load('conversations');
+                    if (saved) {
+                        state.conversations = saved;
+                        ui.renderConversationsList();
+                    }
+                },
 
-                // Generate response
-                this.isGenerating = true;
-                document.getElementById('sendBtn').disabled = true;
+                saveConversations: function() {
+                    storage.save('conversations', state.conversations);
+                    ui.renderConversationsList();
+                },
 
-                try {
-                    const assistantMessage = {
-                        id: (Date.now() + 1).toString(),
-                        role: 'assistant',
-                        content: '',
+                loadModels: async function() {
+                    try {
+                        const data = await api.fetch('/api/tags');
+                        state.models = data.models || [];
+                        
+                        const selector = document.getElementById('modelSelector');
+                        selector.innerHTML = state.models.map(model => 
+                            `<option value="${model.name}">${model.name}</option>`
+                        ).join('');
+                        
+                        if (state.models.length > 0) {
+                            state.currentModel = state.models[0].name;
+                            selector.value = state.currentModel;
+                        }
+                        
+                        ui.updateConnectionStatus(true);
+                    } catch (error) {
+                        console.error('Failed to load models:', error);
+                        ui.showToast('Failed to load models. Is Ollama running?', 'error');
+                        ui.updateConnectionStatus(false);
+                    }
+                },
+
+                createNewConversation: function() {
+                    const id = Date.now().toString();
+                    state.conversations[id] = {
+                        id,
+                        title: 'New Conversation',
+                        messages: [],
+                        model: state.currentModel,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    state.currentConversationId = id;
+                    this.saveConversations();
+                    ui.renderChat();
+                    
+                    ui.showToast('New conversation created', 'success');
+                },
+
+                selectConversation: function(id) {
+                    state.currentConversationId = id;
+                    ui.renderConversationsList();
+                    ui.renderChat();
+                },
+
+                deleteConversation: function(id) {
+                    if (confirm('Delete this conversation?')) {
+                        delete state.conversations[id];
+                        if (state.currentConversationId === id) {
+                            state.currentConversationId = null;
+                            ui.renderChat();
+                        }
+                        this.saveConversations();
+                        ui.showToast('Conversation deleted', 'success');
+                    }
+                },
+
+                sendMessage: async function() {
+                    if (state.isGenerating) return;
+
+                    const input = document.getElementById('messageInput');
+                    const message = input.value.trim();
+                    
+                    if (!message) return;
+                    if (!state.currentConversationId) this.createNewConversation();
+                    if (!state.currentModel) {
+                        ui.showToast('Please select a model', 'error');
+                        return;
+                    }
+
+                    const conversation = state.conversations[state.currentConversationId];
+                    
+                    // Add user message
+                    const userMessage = {
+                        id: Date.now().toString(),
+                        role: 'user',
+                        content: message,
                         timestamp: new Date().toISOString()
                     };
-
-                    await this.generateResponse(conversation, assistantMessage);
                     
-                    conversation.messages.push(assistantMessage);
+                    conversation.messages.push(userMessage);
+                    
+                    // Update title if first message
+                    if (conversation.messages.length === 1) {
+                        conversation.title = message.substring(0, 50) + (message.length > 50 ? '...' : '');
+                    }
+                    
                     conversation.updatedAt = new Date().toISOString();
                     this.saveConversations();
-                    
-                    // Remove typing indicator
-                    typingDiv.remove();
-                    this.renderChat();
-                    
-                } catch (error) {
-                    this.showToast('Failed to generate response: ' + error.message, 'error');
-                    typingDiv.remove();
-                } finally {
-                    this.isGenerating = false;
-                    document.getElementById('sendBtn').disabled = false;
-                }
-            },
+                    ui.renderChat();
 
-            async generateResponse(conversation, assistantMessage) {
-                const messages = conversation.messages.map(msg => ({
-                    role: msg.role,
-                    content: msg.content
-                }));
+                    input.value = '';
+                    this.autoResize(input);
 
-                // Add system prompt if set
-                if (this.settings.systemPrompt) {
-                    messages.unshift({
-                        role: 'system',
-                        content: this.settings.systemPrompt
-                    });
-                }
-
-                const response = await fetch(`${this.settings.ollamaUrl}/api/chat`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: this.currentModel,
-                        messages: messages,
-                        stream: true,
-                        options: {
-                            temperature: this.settings.temperature,
-                            top_p: this.settings.topP,
-                            top_k: this.settings.topK,
-                            num_predict: this.settings.maxTokens
-                        }
-                    })
-                });
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    const chunk = decoder.decode(value);
-                    const lines = chunk.split('\n').filter(line => line.trim());
-
-                    for (const line of lines) {
-                        try {
-                            const json = JSON.parse(line);
-                            if (json.message?.content) {
-                                assistantMessage.content += json.message.content;
-                            }
-                        } catch (e) {
-                            // Skip invalid JSON
-                        }
-                    }
-                }
-            },
-
-            changeModel(modelName) {
-                this.currentModel = modelName;
-                if (this.currentConversationId) {
-                    this.conversations[this.currentConversationId].model = modelName;
-                    this.saveConversations();
-                }
-            },
-
-            toggleSidebar() {
-                document.getElementById('sidebar').classList.toggle('collapsed');
-            },
-
-            toggleSettings() {
-                document.getElementById('settingsPanel').classList.toggle('open');
-            },
-
-            toggleTheme() {
-                const current = document.documentElement.getAttribute('data-theme');
-                const next = current === 'light' ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', next);
-                localStorage.setItem('theme', next);
-            },
-
-            setupTheme() {
-                const saved = localStorage.getItem('theme') || 'dark';
-                document.documentElement.setAttribute('data-theme', saved);
-            },
-
-            setupMarkdown() {
-                marked.setOptions({
-                    highlight: function(code, lang) {
-                        if (lang && hljs.getLanguage(lang)) {
-                            return hljs.highlight(code, { language: lang }).value;
-                        }
-                        return hljs.highlightAuto(code).value;
-                    },
-                    breaks: true,
-                    gfm: true
-                });
-
-                // Add copy buttons to code blocks
-                marked.use({
-                    renderer: {
-                        code(code, lang) {
-                            const highlighted = lang && hljs.getLanguage(lang)
-                                ? hljs.highlight(code, { language: lang }).value
-                                : hljs.highlightAuto(code).value;
-                            
-                            return `
-                                <pre><button class="copy-code-btn" onclick="app.copyCode(this)">Copy</button><code class="hljs">${highlighted}</code></pre>
-                            `;
-                        }
-                    }
-                });
-            },
-
-            copyCode(button) {
-                const code = button.nextElementSibling.textContent;
-                navigator.clipboard.writeText(code);
-                button.textContent = 'Copied!';
-                setTimeout(() => button.textContent = 'Copy', 2000);
-            },
-
-            copyMessage(messageId) {
-                const conversation = this.conversations[this.currentConversationId];
-                const message = conversation.messages.find(m => m.id === messageId);
-                navigator.clipboard.writeText(message.content);
-                this.showToast('Copied to clipboard', 'success');
-            },
-
-            async regenerateResponse(messageId) {
-                // Find the message and remove all messages after it
-                const conversation = this.conversations[this.currentConversationId];
-                const index = conversation.messages.findIndex(m => m.id === messageId);
-                
-                if (index > 0) {
-                    conversation.messages = conversation.messages.slice(0, index);
-                    this.saveConversations();
-                    this.renderChat();
-                    
-                    // Resend the last user message
-                    await this.sendMessage();
-                }
-            },
-
-            exportConversation() {
-                if (!this.currentConversationId) {
-                    this.showToast('No conversation to export', 'error');
-                    return;
-                }
-
-                const conversation = this.conversations[this.currentConversationId];
-                const data = JSON.stringify(conversation, null, 2);
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `conversation_${conversation.id}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-                this.showToast('Conversation exported', 'success');
-            },
-
-            importConversation() {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = '.json';
-                input.onchange = async (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const text = await file.text();
-                        try {
-                            const conversation = JSON.parse(text);
-                            conversation.id = Date.now().toString(); // New ID
-                            this.conversations[conversation.id] = conversation;
-                            this.saveConversations();
-                            this.renderConversationsList();
-                            this.showToast('Conversation imported', 'success');
-                        } catch (error) {
-                            this.showToast('Invalid conversation file', 'error');
-                        }
-                    }
-                };
-                input.click();
-            },
-
-            searchConversations(query) {
-                const items = document.querySelectorAll('.conversation-item');
-                items.forEach(item => {
-                    const title = item.querySelector('.conversation-title').textContent.toLowerCase();
-                    item.style.display = title.includes(query.toLowerCase()) ? 'block' : 'none';
-                });
-            },
-
-            openModelManagement() {
-                const content = `
-                    <div class="model-list">
-                        ${this.models.map(model => `
-                            <div class="model-item">
-                                <div class="model-info">
-                                    <div class="model-name">${model.name}</div>
-                                    <div class="model-size">${this.formatBytes(model.size)}</div>
-                                </div>
-                                <button class="delete-model-btn" onclick="app.deleteModel('${model.name}')">Delete</button>
+                    // Show typing indicator
+                    const chatArea = document.getElementById('chatArea');
+                    const typingDiv = document.createElement('div');
+                    typingDiv.className = 'message assistant';
+                    typingDiv.id = 'typing-indicator';
+                    typingDiv.innerHTML = `
+                        <div class="message-avatar">AI</div>
+                        <div class="message-content">
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
                             </div>
-                        `).join('')}
-                    </div>
-                    <div class="setting-group" style="margin-top: 20px;">
-                        <label class="setting-label">Pull New Model</label>
-                        <input type="text" class="setting-input" id="pullModelInput" placeholder="Enter model name...">
-                    </div>
-                `;
+                        </div>
+                    `;
+                    chatArea.appendChild(typingDiv);
+                    chatArea.scrollTop = chatArea.scrollHeight;
 
-                this.openModal('Model Management', content, 'Pull Model', async () => {
-                    const modelName = document.getElementById('pullModelInput').value.trim();
-                    if (modelName) {
-                        await this.pullModel(modelName);
+                    // Generate response
+                    state.isGenerating = true;
+                    document.getElementById('sendBtn').disabled = true;
+
+                    try {
+                        const assistantMessage = {
+                            id: (Date.now() + 1).toString(),
+                            role: 'assistant',
+                            content: '',
+                            timestamp: new Date().toISOString()
+                        };
+
+                        await this.generateResponse(conversation, assistantMessage);
+                        
+                        conversation.messages.push(assistantMessage);
+                        conversation.updatedAt = new Date().toISOString();
+                        this.saveConversations();
+                        
+                        // Remove typing indicator
+                        typingDiv.remove();
+                        ui.renderChat();
+                        
+                    } catch (error) {
+                        ui.showToast('Failed to generate response: ' + error.message, 'error');
+                        typingDiv.remove();
+                    } finally {
+                        state.isGenerating = false;
+                        document.getElementById('sendBtn').disabled = false;
                     }
-                });
-            },
+                },
 
-            async pullModel(modelName) {
-                this.showToast(`Pulling model: ${modelName}...`, 'warning');
-                
-                try {
-                    const response = await fetch(`${this.settings.ollamaUrl}/api/pull`, {
+                generateResponse: async function(conversation, assistantMessage) {
+                    const messages = conversation.messages.map(msg => ({
+                        role: msg.role,
+                        content: msg.content
+                    }));
+
+                    // Add system prompt if set
+                    if (state.settings.systemPrompt) {
+                        messages.unshift({
+                            role: 'system',
+                            content: state.settings.systemPrompt
+                        });
+                    }
+
+                    await api.streamFetch('/api/chat', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
+                        body: JSON.stringify({
+                            model: state.currentModel,
+                            messages: messages,
+                            stream: true,
+                            options: {
+                                temperature: state.settings.temperature,
+                                top_p: state.settings.topP,
+                                top_k: state.settings.topK,
+                                num_predict: state.settings.maxTokens
+                            }
+                        })
+                    }, (chunk) => {
+                        if (chunk.message?.content) {
+                            assistantMessage.content += chunk.message.content;
+                        }
+                    });
+                },
+
+                changeModel: function(modelName) {
+                    state.currentModel = modelName;
+                    if (state.currentConversationId) {
+                        state.conversations[state.currentConversationId].model = modelName;
+                        this.saveConversations();
+                    }
+                    ui.showToast(`Switched to ${modelName}`, 'success');
+                },
+
+                toggleSidebar: function() {
+                    const sidebar = document.getElementById('sidebar');
+                    const container = document.getElementById('appContainer');
+                    
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.toggle('open');
+                    } else {
+                        container.classList.toggle('sidebar-collapsed');
+                    }
+                },
+
+                toggleSettings: function() {
+                    document.getElementById('settingsPanel').classList.toggle('open');
+                },
+
+                toggleApiInspector: function() {
+                    document.getElementById('apiInspector').classList.toggle('open');
+                },
+
+                clearApiQueries: function() {
+                    state.apiQueries = [];
+                    ui.updateApiInspector();
+                    ui.showToast('API queries cleared', 'success');
+                },
+
+                toggleTheme: function() {
+                    const current = document.documentElement.getAttribute('data-theme');
+                    const next = current === 'light' ? 'dark' : 'light';
+                    document.documentElement.setAttribute('data-theme', next);
+                    localStorage.setItem('theme', next);
+                    
+                    const icon = document.getElementById('themeIcon');
+                    icon.textContent = next === 'light' ? '☀' : '◐';
+                },
+
+                setupTheme: function() {
+                    const saved = localStorage.getItem('theme') || 'dark';
+                    document.documentElement.setAttribute('data-theme', saved);
+                    
+                    const icon = document.getElementById('themeIcon');
+                    icon.textContent = saved === 'light' ? '☀' : '◐';
+                },
+
+                setupMarkdown: function() {
+                    marked.setOptions({
+                        highlight: function(code, lang) {
+                            if (lang && hljs.getLanguage(lang)) {
+                                return hljs.highlight(code, { language: lang }).value;
+                            }
+                            return hljs.highlightAuto(code).value;
                         },
-                        body: JSON.stringify({ name: modelName })
+                        breaks: true,
+                        gfm: true
                     });
 
-                    if (response.ok) {
-                        this.showToast('Model pulled successfully', 'success');
-                        await this.loadModels();
-                        this.closeModal();
-                    } else {
-                        this.showToast('Failed to pull model', 'error');
-                    }
-                } catch (error) {
-                    this.showToast('Error pulling model: ' + error.message, 'error');
-                }
-            },
-
-            async deleteModel(modelName) {
-                if (!confirm(`Delete model: ${modelName}?`)) return;
-
-                try {
-                    const response = await fetch(`${this.settings.ollamaUrl}/api/delete`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ name: modelName })
+                    marked.use({
+                        renderer: {
+                            code(code, lang) {
+                                const highlighted = lang && hljs.getLanguage(lang)
+                                    ? hljs.highlight(code, { language: lang }).value
+                                    : hljs.highlightAuto(code).value;
+                                
+                                return `
+                                    <pre><button class="copy-code-btn" onclick="OllamaApp.copyCode(this)">Copy</button><code class="hljs">${highlighted}</code></pre>
+                                `;
+                            }
+                        }
                     });
+                },
 
-                    if (response.ok) {
-                        this.showToast('Model deleted', 'success');
+                copyCode: function(button) {
+                    const code = button.nextElementSibling.textContent;
+                    navigator.clipboard.writeText(code);
+                    button.textContent = 'Copied!';
+                    setTimeout(() => button.textContent = 'Copy', 2000);
+                },
+
+                copyMessage: function(messageId) {
+                    const conversation = state.conversations[state.currentConversationId];
+                    const message = conversation.messages.find(m => m.id === messageId);
+                    navigator.clipboard.writeText(message.content);
+                    ui.showToast('Copied to clipboard', 'success');
+                },
+
+                regenerateResponse: async function(messageId) {
+                    const conversation = state.conversations[state.currentConversationId];
+                    const index = conversation.messages.findIndex(m => m.id === messageId);
+                    
+                    if (index > 0) {
+                        conversation.messages = conversation.messages.slice(0, index);
+                        this.saveConversations();
+                        ui.renderChat();
+                        
+                        await this.sendMessage();
+                    }
+                },
+
+                exportConversation: function() {
+                    if (!state.currentConversationId) {
+                        ui.showToast('No conversation to export', 'error');
+                        return;
+                    }
+
+                    const conversation = state.conversations[state.currentConversationId];
+                    const data = JSON.stringify(conversation, null, 2);
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `conversation_${conversation.id}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    ui.showToast('Conversation exported', 'success');
+                },
+
+                importConversation: function() {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.json';
+                    input.onchange = async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const text = await file.text();
+                            try {
+                                const conversation = JSON.parse(text);
+                                conversation.id = Date.now().toString();
+                                state.conversations[conversation.id] = conversation;
+                                this.saveConversations();
+                                ui.showToast('Conversation imported', 'success');
+                            } catch (error) {
+                                ui.showToast('Invalid conversation file', 'error');
+                            }
+                        }
+                    };
+                    input.click();
+                },
+
+                searchConversations: utils.debounce(function(query) {
+                    const items = document.querySelectorAll('.conversation-item');
+                    items.forEach(item => {
+                        const title = item.querySelector('.conversation-title').textContent.toLowerCase();
+                        item.style.display = title.includes(query.toLowerCase()) ? 'block' : 'none';
+                    });
+                }, 300),
+
+                openModelManagement: function() {
+                    const content = `
+                        <div class="model-list">
+                            ${state.models.map(model => `
+                                <div class="model-item">
+                                    <div class="model-info">
+                                        <div class="model-name">${model.name}</div>
+                                        <div class="model-size">${utils.formatBytes(model.size)}</div>
+                                    </div>
+                                    <button class="delete-model-btn" onclick="OllamaApp.deleteModel('${model.name}')">Delete</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="setting-group" style="margin-top: 24px;">
+                            <label class="setting-label">Pull New Model</label>
+                            <input type="text" class="setting-input" id="pullModelInput" placeholder="Enter model name (e.g., llama2)...">
+                        </div>
+                    `;
+
+                    this.openModal('Model Management', content, 'Pull Model', async () => {
+                        const modelName = document.getElementById('pullModelInput').value.trim();
+                        if (modelName) {
+                            await this.pullModel(modelName);
+                        }
+                    });
+                },
+
+                pullModel: async function(modelName) {
+                    ui.showToast(`Pulling model: ${modelName}...`, 'warning');
+                    this.closeModal();
+                    
+                    try {
+                        await api.fetch('/api/pull', {
+                            method: 'POST',
+                            body: JSON.stringify({ name: modelName })
+                        });
+
+                        ui.showToast('Model pulled successfully', 'success');
+                        await this.loadModels();
+                    } catch (error) {
+                        ui.showToast('Failed to pull model: ' + error.message, 'error');
+                    }
+                },
+
+                deleteModel: async function(modelName) {
+                    if (!confirm(`Delete model: ${modelName}?`)) return;
+
+                    try {
+                        await api.fetch('/api/delete', {
+                            method: 'DELETE',
+                            body: JSON.stringify({ name: modelName })
+                        });
+
+                        ui.showToast('Model deleted', 'success');
                         await this.loadModels();
                         this.closeModal();
-                    } else {
-                        this.showToast('Failed to delete model', 'error');
+                    } catch (error) {
+                        ui.showToast('Failed to delete model: ' + error.message, 'error');
                     }
-                } catch (error) {
-                    this.showToast('Error deleting model: ' + error.message, 'error');
+                },
+
+                openModal: function(title, content, actionText, actionCallback) {
+                    document.getElementById('modalHeader').textContent = title;
+                    document.getElementById('modalContent').innerHTML = content;
+                    document.getElementById('modalActionBtn').textContent = actionText;
+                    document.getElementById('modalActionBtn').onclick = actionCallback;
+                    document.getElementById('modalOverlay').classList.add('open');
+                },
+
+                closeModal: function(event) {
+                    if (!event || event.target.id === 'modalOverlay') {
+                        document.getElementById('modalOverlay').classList.remove('open');
+                    }
+                },
+
+                updateSliderValue: function(id, value) {
+                    document.getElementById(id + 'Value').textContent = value;
+                },
+
+                handleKeyPress: function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        this.sendMessage();
+                    }
+                },
+
+                autoResize: function(textarea) {
+                    textarea.style.height = 'auto';
+                    textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
                 }
-            },
+            };
+        })();
 
-            openModal(title, content, actionText, actionCallback) {
-                document.getElementById('modalHeader').textContent = title;
-                document.getElementById('modalContent').innerHTML = content;
-                document.getElementById('modalActionBtn').textContent = actionText;
-                document.getElementById('modalActionBtn').onclick = actionCallback;
-                document.getElementById('modalOverlay').classList.add('open');
-            },
-
-            closeModal(event) {
-                if (!event || event.target.id === 'modalOverlay') {
-                    document.getElementById('modalOverlay').classList.remove('open');
-                }
-            },
-
-            showToast(message, type = 'info') {
-                const container = document.getElementById('toastContainer');
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                toast.textContent = message;
-                container.appendChild(toast);
-
-                setTimeout(() => {
-                    toast.style.animation = 'toastIn 0.3s ease reverse';
-                    setTimeout(() => toast.remove(), 300);
-                }, 3000);
-            },
-
-            updateSliderValue(id, value) {
-                document.getElementById(id + 'Value').textContent = value;
-            },
-
-            handleKeyPress(event) {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    this.sendMessage();
-                }
-            },
-
-            autoResize(textarea) {
-                textarea.style.height = 'auto';
-                textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
-            },
-
-            formatBytes(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-            }
-        };
-
-        // Initialize app
-        window.addEventListener('DOMContentLoaded', () => app.init());
+        // Initialize app on load
+        window.addEventListener('DOMContentLoaded', () => {
+            OllamaApp.init();
+        });
     </script>
 </body>
 </html>
